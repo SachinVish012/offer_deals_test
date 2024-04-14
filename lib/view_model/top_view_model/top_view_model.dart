@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:test_deals/repository/top_deals_repo.dart';
+import 'package:test_deals/utils/toast_msg/toast_msg.dart';
 
 import '../../model/top_model_class/top_model_class.dart';
 import '../../utils/scroll_utils/load_data.dart';
@@ -41,6 +42,7 @@ class TopViewModel extends GetxController {
   void loadMoreData() {
     ScrollUtils.loadMoreData(() {
       print("Load More Data");
+      toastRedC("Data Not Available");
     });
   }
 

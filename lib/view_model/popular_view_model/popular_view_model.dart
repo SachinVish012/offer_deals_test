@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../../model/top_model_class/top_model_class.dart';
 import '../../repository/popular_featured_repo.dart';
 import '../../utils/scroll_utils/load_data.dart';
+import '../../utils/toast_msg/toast_msg.dart';
 
 class PopularViewModel extends GetxController {
   var deals = <Deal>[].obs;
@@ -40,6 +41,7 @@ class PopularViewModel extends GetxController {
   void loadMoreData() {
     ScrollUtils.loadMoreData(() {
       print("Load More Data");
+      toastRedC("Data Not Available");
     });
   }
 

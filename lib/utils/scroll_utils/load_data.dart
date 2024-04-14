@@ -10,7 +10,7 @@ class ScrollUtils {
 
   static void loadMoreData(Function loadCallback) async {
     print("load");
-    await Future.delayed(Duration(seconds: 2));
+    await Future.delayed(Duration(seconds: 1));
     print("load finished");
     loadCallback();
   }
