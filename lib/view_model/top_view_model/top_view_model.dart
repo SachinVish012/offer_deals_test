@@ -14,6 +14,7 @@ class TopViewModel extends GetxController {
 
   @override
   void onInit() async {
+    fetchData();
     scrollController.addListener(
         () => ScrollUtils.scrollListener(scrollController, loadMoreData));
     super.onInit();
@@ -48,6 +49,7 @@ class TopViewModel extends GetxController {
 
   @override
   void onClose() {
+    deals.clear();
     scrollController.dispose();
     super.onClose();
   }
