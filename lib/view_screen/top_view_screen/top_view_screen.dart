@@ -7,7 +7,7 @@ import '../../utils/scroll_utils/load_data.dart';
 import '../../view_model/top_view_model/top_view_model.dart';
 
 class TopViewScreen extends StatefulWidget {
-  const TopViewScreen({super.key});
+  const TopViewScreen({Key? key}) : super(key: key);
 
   @override
   State<TopViewScreen> createState() => _TopViewScreenState();
@@ -26,26 +26,34 @@ class _TopViewScreenState extends State<TopViewScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: RefreshIndicator(
-        onRefresh: () async{
+        onRefresh: () async {
           await topViewModel.fetchData();
         },
         child: Obx(() {
-          if (topViewModel.deals.isEmpty && topViewModel.isLoading.value) {
+          if (topViewModel.isLoading.value && topViewModel.deals.isEmpty) {
+            print("-----1-----");
             return Center(
               child: CircularProgressIndicator(),
             );
           } else {
             return ListView.builder(
-             controller: topViewModel.scrollController,
-              itemCount: topViewModel.deals.length,
+              itemCount: topViewModel.deals.length + (topViewModel.pagination.hasNextPage(topViewModel.deals) ? 1 : 0),
               itemBuilder: (context, index) {
-                final deal = topViewModel.deals[index];
-                String formattedDate = DateFormateUtils.formatDate(deal.createdAt);
-                return DealCardWidget(
-                  imageUrl: deal.imageMedium,
-                  commentsCount: deal.commentsCount,
-                  createdDate: formattedDate.toString(),
-                );
+                if (index < topViewModel.deals.length) {
+                  final deal = topViewModel.deals[index];
+                  String formattedDate = DateFormateUtils.formatDate(deal.createdAt);
+                  return DealCardWidget(
+                    imageUrl: deal.imageMedium,
+                    commentsCount: deal.commentsCount,
+                    createdDate: formattedDate.toString(),
+                  );
+                } else {
+                  topViewModel.loadMoreData();
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                }
               },
             );
           }
@@ -54,3 +62,4 @@ class _TopViewScreenState extends State<TopViewScreen> {
     );
   }
 }
+

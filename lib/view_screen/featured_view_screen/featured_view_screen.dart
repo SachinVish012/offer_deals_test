@@ -26,26 +26,39 @@ class _FeaturedViewScreenState extends State<FeaturedViewScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: RefreshIndicator(
-        onRefresh: ()async{
+        onRefresh: () async {
           await popularViewModel.fetchData();
         },
         child: Obx(() {
-          if (popularViewModel.deals.isEmpty && popularViewModel.isLoading.value) {
+          if (popularViewModel.isLoading.value &&
+              popularViewModel.deals.isEmpty) {
             return Center(
               child: CircularProgressIndicator(),
             );
           } else {
             return ListView.builder(
-              controller: popularViewModel.scrollController,
-              itemCount: popularViewModel.deals.length,
+              itemCount: popularViewModel.deals.length +
+                  (popularViewModel.pagination
+                          .hasNextPage(popularViewModel.deals)
+                      ? 1
+                      : 0),
               itemBuilder: (context, index) {
-                final deal = popularViewModel.deals[index];
-                String formattedDate = DateFormateUtils.formatDate(deal.createdAt);
-                return DealCardWidget(
-                  imageUrl: deal.imageMedium,
-                  commentsCount: deal.commentsCount,
-                  createdDate: formattedDate.toString(),
-                );
+                if (index < popularViewModel.deals.length) {
+                  final deal = popularViewModel.deals[index];
+                  String formattedDate =
+                      DateFormateUtils.formatDate(deal.createdAt);
+                  return DealCardWidget(
+                    imageUrl: deal.imageMedium,
+                    commentsCount: deal.commentsCount,
+                    createdDate: formattedDate.toString(),
+                  );
+                } else {
+                  popularViewModel.loadMoreData();
+                    return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                }
               },
             );
           }

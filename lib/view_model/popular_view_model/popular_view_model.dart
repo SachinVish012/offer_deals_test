@@ -1,23 +1,16 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../model/top_model_class/top_model_class.dart';
 import '../../repository/popular_featured_repo.dart';
-import '../../utils/scroll_utils/load_data.dart';
+import '../../res/pagignation/pagignation_class.dart';
 import '../../utils/toast_msg/toast_msg.dart';
 
 class PopularViewModel extends GetxController {
   var deals = <Deal>[].obs;
   var isLoading = true.obs;
-  ScrollController scrollController = ScrollController();
   PopularsRepository _popularsRepository = PopularsRepository();
+  final Pagination pagination = Pagination();
 
-  @override
-  void onInit() async {
-    scrollController.addListener(
-            () => ScrollUtils.scrollListener(scrollController, loadMoreData));
-    super.onInit();
-  }
 
   //---fetch data from api
   Future<void> fetchData() async {
@@ -27,9 +20,13 @@ class PopularViewModel extends GetxController {
       print(value.toString() + "--------");
       if (value != null) {
         final List<dynamic> dealsJson = value['deals'];
-        List<Deal> fetchedDeals =
-            dealsJson.map((dealJson) => Deal.fromJson(dealJson)).toList();
-        deals.assignAll(fetchedDeals);
+        List<Deal> fetchedDeals = dealsJson.map((dealJson) => Deal.fromJson(dealJson)).toList();
+        if (pagination.currentPage == 1) {
+          deals.assignAll(fetchedDeals);
+        } else {
+          deals.addAll(fetchedDeals);
+        }
+        pagination.currentPage++;
       }
     } catch (error, stackTrace) {
       print('Error: $error');
@@ -38,17 +35,15 @@ class PopularViewModel extends GetxController {
       isLoading(false);
     }
   }
-  void loadMoreData() {
-    ScrollUtils.loadMoreData(() {
-      print("Load More Data");
-      toastRedC("Data Not Available");
-    });
-  }
-
-  @override
-  void onClose() {
-    scrollController.dispose();
-    super.onClose();
+  //---for pagignation data load
+  void loadMoreData() async {
+    if (!isLoading.value && pagination.hasNextPage(deals)) {
+      isLoading(true);
+      await fetchData();
+      isLoading(false);
+    } else {
+      toastRedC("No more data available");
+    }
   }
 
 }

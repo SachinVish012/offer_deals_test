@@ -1,36 +1,36 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:test_deals/repository/top_deals_repo.dart';
-import 'package:test_deals/utils/toast_msg/toast_msg.dart';
 
 import '../../model/top_model_class/top_model_class.dart';
-import '../../utils/scroll_utils/load_data.dart';
+import '../../repository/top_deals_repo.dart';
+import '../../res/pagignation/pagignation_class.dart';
+import '../../utils/toast_msg/toast_msg.dart';
 
 class TopViewModel extends GetxController {
   var deals = <Deal>[].obs;
-  var isLoading = true.obs;
-  ScrollController scrollController = ScrollController();
+  var isLoading = false.obs;
   TopDealsRepository _topDealsRepository = TopDealsRepository();
+  final Pagination pagination = Pagination();
 
   @override
-  void onInit() async {
+  void onInit() {
     fetchData();
-    scrollController.addListener(
-        () => ScrollUtils.scrollListener(scrollController, loadMoreData));
     super.onInit();
   }
 
-  //----for api call
+  //-----for call api
   Future<void> fetchData() async {
     try {
       isLoading(true);
       var value = await _topDealsRepository.topDealsAPICall();
-      print(value.toString() + "--------");
       if (value != null) {
         final List<dynamic> dealsJson = value['deals'];
-        List<Deal> fetchedDeals =
-            dealsJson.map((dealJson) => Deal.fromJson(dealJson)).toList();
-        deals.assignAll(fetchedDeals);
+        List<Deal> fetchedDeals = dealsJson.map((dealJson) => Deal.fromJson(dealJson)).toList();
+        if (pagination.currentPage == 1) {
+          deals.assignAll(fetchedDeals);
+        } else {
+          deals.addAll(fetchedDeals);
+        }
+        pagination.currentPage++;
       }
     } catch (error, stackTrace) {
       print('Error: $error');
@@ -40,17 +40,15 @@ class TopViewModel extends GetxController {
     }
   }
 
-  void loadMoreData() {
-    ScrollUtils.loadMoreData(() {
-      print("Load More Data");
-      toastRedC("Data Not Available");
-    });
-  }
-
-  @override
-  void onClose() {
-    deals.clear();
-    scrollController.dispose();
-    super.onClose();
+  //---for pagignation data load
+  void loadMoreData() async {
+    if (!isLoading.value && pagination.hasNextPage(deals)) {
+      isLoading(true);
+      await fetchData();
+      isLoading(false);
+    } else {
+      toastRedC("No more data available");
+    }
   }
 }
+
